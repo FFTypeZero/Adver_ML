@@ -6,6 +6,7 @@ from model import model
 from sklearn import decomposition
 from CW_attack import l2_attack
 from get_model import get_easy_conv
+from get_model import get_naive_nn
 
 def plot_digits(vecs, nrows, ncols):
     data = np.reshape(vecs, [nrows, ncols, -1])
@@ -18,15 +19,36 @@ def plot_digits(vecs, nrows, ncols):
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot = True)
 
-simple_conv, sess = get_easy_conv()
+sess = tf.Session()
+simple_conv = get_easy_conv(sess)
+sess.run(tf.global_variables_initializer())
+saver = tf.train.Saver()
+saver.restore(sess, "easy_conv/")
+
 test_images = mnist.test.images[0:100]
 test_labels = mnist.test.labels[0:100]
 fd = [test_images, 1.0]
 adv_img = l2_attack(simple_conv, sess, fd, 0.01, 3e-3, test_images, 3, 10)
+preds2 = simple_conv.get_pred()
 
-preds = simple_conv.get_pred()
-predictions = sess.run(preds, feed_dict=dict((zip(simple_conv.ph_list, [test_images, 1.0]))))
+predictions2 = sess.run(preds2, feed_dict=dict((zip(simple_conv.ph_list, [adv_img, 1.0]))))
+accuracy2 = np.mean(np.equal(predictions2, np.argmax(test_labels, axis=1)))
+print("simple conv: test accuracy %g" % accuracy2)
+print(predictions2)
+sess.close()
+
+tf.reset_default_graph()
+
+sess = tf.Session()
+naive_nn = get_naive_nn()
+sess.run(tf.global_variables_initializer())
+saver = tf.train.Saver()
+saver.restore(sess, "trial_save/")
+
+preds = naive_nn.get_pred()
+predictions = sess.run(preds, feed_dict=dict((zip(naive_nn.ph_list, [adv_img]))))
 accuracy = np.mean(np.equal(predictions, np.argmax(test_labels, axis=1)))
 
-print("test accuracy %g" % accuracy)
+print("naive nn: test accuracy %g" % accuracy)
+print(predictions)
 plot_digits(adv_img, 10, 10)

@@ -16,7 +16,7 @@ def conv2d(x, W):
 def max_pool_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding = 'SAME')
 
-def get_easy_conv():
+def get_easy_conv(sess):
     x = tf.placeholder(tf.float32, [None, 784])
     y_ = tf.placeholder(tf.float32, [None, 10])
     W_conv1 = weight_variable([5, 5, 1, 32])
@@ -45,13 +45,30 @@ def get_easy_conv():
 
     cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels = y_, logits = y_conv))
 
-    saver = tf.train.Saver()
-
-    sess = tf.Session()
-    sess.run(tf.global_variables_initializer())
-
-    saver.restore(sess, "easy_conv/")
+    # saver = tf.train.Saver()
+    #
+    # sess.run(tf.local_variables_initializer())
+    #
+    # saver.restore(sess, "easy_conv/")
 
     simple_conv = model(y_conv, cross_entropy, [x, keep_prob], y_)
 
-    return simple_conv, sess
+    return simple_conv
+
+
+def get_naive_nn():
+    x = tf.placeholder(tf.float32, [None, 784])
+    W = tf.get_variable(initializer = tf.zeros([784, 10]), name = 'softmax_W')
+    b = tf.Variable(tf.zeros([10]), name = 'bias')
+
+    # sess.run(tf.local_variables_initializer())
+
+    y = tf.matmul(x, W) + b
+    y_ = tf.placeholder(tf.float32, [None, 10])
+    cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels = y_, logits = y))
+
+    # saver = tf.train.Saver()
+    # saver.restore(sess, "trial_save/")
+
+    naive_nn = model(y, cross_entropy, [x], y_)
+    return naive_nn
