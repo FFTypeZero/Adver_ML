@@ -23,7 +23,7 @@ sess = tf.Session()
 simple_conv = get_easy_conv(sess)
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
-saver.restore(sess, "easy_conv/")
+saver.restore(sess, "saved_models/easy_conv/")
 
 test_images = mnist.test.images[0:100]
 test_labels = mnist.test.labels[0:100]
@@ -43,7 +43,7 @@ sess = tf.Session()
 naive_nn = get_naive_nn()
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
-saver.restore(sess, "trial_save/")
+saver.restore(sess, "saved_models/trial_save/")
 
 preds = naive_nn.get_pred()
 predictions = sess.run(preds, feed_dict=dict((zip(naive_nn.ph_list, [adv_img]))))

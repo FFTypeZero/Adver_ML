@@ -48,7 +48,5 @@ Temporary Items
 
 .ipynb_checkpoints/*
 __pycache__/*
-easy_conv/*
 MNIST_data/*
-trial_save/*
 *.ipynb
