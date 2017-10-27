@@ -51,3 +51,4 @@ __pycache__/*
 easy_conv/*
 MNIST_data/*
 trial_save/*
+*.ipynb
