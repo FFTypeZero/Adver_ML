@@ -26,15 +26,20 @@ saver = tf.train.Saver()
 saver.restore(sess, "saved_models/easy_conv/")
 
 test_images = mnist.test.images[0:100]
+# test_images = np.random.random_sample([100, 784])
 test_labels = mnist.test.labels[0:100]
 fd = [test_images, 1.0]
-adv_img = l2_attack(simple_conv, sess, fd, 0.01, 3e-3, test_images, 3, 10)
+adv_img = l2_attack(simple_conv, sess, fd, 10, 3e-3, test_images, 3, 10, targeted = False, max_ite=2000)
 preds2 = simple_conv.get_pred()
+prob = simple_conv.get_prob()
+
 
 predictions2 = sess.run(preds2, feed_dict=dict((zip(simple_conv.ph_list, [adv_img, 1.0]))))
+# probability = sess.run(prob, feed_dict=dict((zip(simple_conv.ph_list, [adv_img, 1.0]))))
 accuracy2 = np.mean(np.equal(predictions2, np.argmax(test_labels, axis=1)))
 print("simple conv: test accuracy %g" % accuracy2)
 print(predictions2)
+# print(np.max(probability, axis=1))
 sess.close()
 
 tf.reset_default_graph()
@@ -51,4 +56,4 @@ accuracy = np.mean(np.equal(predictions, np.argmax(test_labels, axis=1)))
 
 print("naive nn: test accuracy %g" % accuracy)
 print(predictions)
-plot_digits(adv_img, 10, 10)
+plot_digits(adv_img[0:49], 7, 7)
