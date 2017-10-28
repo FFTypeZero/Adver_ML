@@ -56,4 +56,4 @@ accuracy = np.mean(np.equal(predictions, np.argmax(test_labels, axis=1)))
 
 print("naive nn: test accuracy %g" % accuracy)
 print(predictions)
-plot_digits(adv_img[0:49], 7, 7)
+# plot_digits(adv_img[0:49], 7, 7)
