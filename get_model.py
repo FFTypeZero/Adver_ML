@@ -16,8 +16,10 @@ def conv2d(x, W):
 def max_pool_2x2(x):
     return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding = 'SAME')
 
-def get_easy_conv(sess):
-    x = tf.placeholder(tf.float32, [None, 784])
+def get_easy_conv(x, keep_prob):
+    start_var = set(v.name for v in tf.global_variables())
+
+    # x = tf.placeholder(tf.float32, [None, 784])
     y_ = tf.placeholder(tf.float32, [None, 10])
     W_conv1 = weight_variable([5, 5, 1, 32])
     b_conv1 = bias_variable([32])
@@ -36,7 +38,7 @@ def get_easy_conv(sess):
     h_pool2_flat = tf.reshape(h_pool2, [-1, 7*7*64])
     h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 
-    keep_prob = tf.placeholder(tf.float32)
+    # keep_prob = tf.placeholder(tf.float32)
     h_fc1_drop = tf.nn.dropout(h_fc1, keep_prob)
 
     W_fc2 = weight_variable([1024, 10])
@@ -44,6 +46,9 @@ def get_easy_conv(sess):
     y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
 
     cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels = y_, logits = y_conv))
+
+    end_var = tf.global_variables()
+    new_var = [v for v in end_var if v.name not in start_var]
 
     # saver = tf.train.Saver()
     #
@@ -53,7 +58,7 @@ def get_easy_conv(sess):
 
     simple_conv = model(y_conv, cross_entropy, [x, keep_prob], y_)
 
-    return simple_conv
+    return simple_conv, new_var
 
 
 def get_naive_nn():

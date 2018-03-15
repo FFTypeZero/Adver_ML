@@ -12,7 +12,9 @@ def ConvNormLRelu(x, name, k, leak_slope, kernel, stride, batch_norm, reuse):
     return output
 
 def D_mnist(x, kernel = [4, 4], stride = [2, 2], leak_slope = 0.2, batch_norm = False, reuse = False):
-    start_var = set(x.name for x in tf.global_variables())
+    x = tf.reshape(x, [-1, 28, 28, 1])
+
+    start_var = set(v.name for v in tf.global_variables())
 
     output = ConvNormLRelu(x, "C8", 8, leak_slope, kernel, stride, batch_norm, reuse)
     output = ConvNormLRelu(output, "C16", 16, leak_slope, kernel, stride, batch_norm, reuse)
@@ -23,13 +25,16 @@ def D_mnist(x, kernel = [4, 4], stride = [2, 2], leak_slope = 0.2, batch_norm = 
     output = tf.layers.dense(output, 1, tf.nn.relu)
 
     end_var = tf.global_variables()
-    new_var = [x for x in end_var if x.name not in start_var]
+    new_var = [v for v in end_var if v.name not in start_var]
 
-    return output, new_var
+    if reuse == False:
+        return output, new_var
+    else:
+        return output
 
 def test_D_mnist():
-    trial_input = tf.placeholder(tf.float32, [None, 28, 28, 1])
-    feed = np.zeros([25, 28, 28, 1])
+    trial_input = tf.placeholder(tf.float32, [None, 784])
+    feed = np.zeros([25, 784])
     output, var_list = D_mnist(trial_input)
 
     sess = tf.Session()

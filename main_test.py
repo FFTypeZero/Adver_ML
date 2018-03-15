@@ -19,8 +19,10 @@ def plot_digits(vecs, nrows, ncols):
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot = True)
 
+x = tf.placeholder(tf.float32, [None, 784])
+keep_prob = tf.placeholder(tf.float32)
 sess = tf.Session()
-simple_conv = get_easy_conv(sess)
+simple_conv, _ = get_easy_conv(x, keep_prob)
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver()
 saver.restore(sess, "saved_models/easy_conv/")
