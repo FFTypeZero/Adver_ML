@@ -50,3 +50,4 @@ Temporary Items
 __pycache__/*
 MNIST_data/*
 *.ipynb
+graphs/*

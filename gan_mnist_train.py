@@ -13,9 +13,9 @@ LEARNING_RATE = 2e-4
 N_CRITIC = 5
 MAX_ITERATION = 5000
 LAMBDA = 10
-ALPHA = 0.25
-BETA = 0.25
-GAMMA = 0.5
+ALPHA = 0.15
+BETA = 0.15
+GAMMA = 0.85
 
 def plot_digits(vecs, nrows, ncols):
     data = np.reshape(vecs, [nrows, ncols, -1])
@@ -49,14 +49,14 @@ Dx, D_var = D_mnist(x)
 Dx_til = D_mnist(x_til, reuse = True)
 Dx_hat = D_mnist(x_hat, reuse = True)
 
-L_D = (Dx_til - Dx + LAMBDA * (tf.norm(tf.gradients(Dx_hat, x_hat), axis=1) - 1)**2)/BATCH_SIZE
+L_D = tf.reduce_sum(Dx_til - Dx + LAMBDA * (tf.norm(tf.gradients(Dx_hat, x_hat), axis=1) - 1)**2)/BATCH_SIZE
 
 keep_prob = tf.placeholder(tf.float32)
 simple_conv, target_var = get_easy_conv(x_til, keep_prob)
 
 L_adv = Loss_adv(simple_conv, 3)
 L_hinge = tf.maximum(0.0, tf.norm(delta_x, axis=1) - 0.3)
-L_G = (GAMMA*L_adv - ALPHA * Dx_til + BETA * L_hinge)/BATCH_SIZE
+L_G = tf.reduce_sum(GAMMA*L_adv - ALPHA * Dx_til + BETA * L_hinge)/BATCH_SIZE
 
 update_D = tf.train.AdamOptimizer(LEARNING_RATE).minimize(L_D, var_list = D_var)
 update_G = tf.train.AdamOptimizer(LEARNING_RATE).minimize(L_G, var_list = G_var)
@@ -70,16 +70,25 @@ y_ = tf.placeholder(tf.float32, [None, 10])
 pred_op = simple_conv.get_pred()
 acc_op = tf.reduce_mean(tf.cast(tf.equal(pred_op, tf.argmax(y_, axis=1)), tf.float32))
 
+summary_writer = tf.summary.FileWriter("./graphs/gan_mnist", sess.graph)
+
+tf.summary.scalar("D loss", L_D)
+tf.summary.scalar("G loss", L_G)
+
+summary_op = tf.summary.merge_all()
+
 for i in range(MAX_ITERATION):
-    batch = mnist.train.next_batch(BATCH_SIZE)
     for t in range(N_CRITIC):
+        batch = mnist.train.next_batch(BATCH_SIZE)
         z_feed = np.random.random_sample((BATCH_SIZE, 28, 28, 1))
         ep_feed = np.random.uniform()
 
         sess.run(update_D, feed_dict = {x: batch[0], z: z_feed, epsilon: ep_feed})
     z_feed_2 = np.random.random_sample((BATCH_SIZE, 28, 28, 1))
     sess.run(update_G, feed_dict = {x: batch[0], z: z_feed_2, keep_prob: 1.0})
-    # print("Here")
+
+    summary = sess.run(summary_op, feed_dict = {x: batch[0], z: z_feed, epsilon: ep_feed, keep_prob: 1.0})
+    summary_writer.add_summary(summary, i)
     if i % 100 == 0:
         acc = sess.run(acc_op, feed_dict = {x: batch[0], z: z_feed_2, y_: batch[1], keep_prob: 1.0})
         print("This is {}th training iteration and the target accuracy is {}.".format(i+1, acc))
