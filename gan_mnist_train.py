@@ -8,14 +8,14 @@ from get_model import get_easy_conv
 from discriminator_mnist import D_mnist
 from generator_mnist import G_mnist
 
-BATCH_SIZE = 40
+BATCH_SIZE = 50
 LEARNING_RATE = 2e-4
 N_CRITIC = 5
 MAX_ITERATION = 5000
 LAMBDA = 10
-ALPHA = 0.15
-BETA = 0.15
-GAMMA = 0.85
+ALPHA = 0.18
+BETA = 0.18
+GAMMA = 0.82
 
 def plot_digits(vecs, nrows, ncols):
     data = np.reshape(vecs, [nrows, ncols, -1])
@@ -70,12 +70,12 @@ y_ = tf.placeholder(tf.float32, [None, 10])
 pred_op = simple_conv.get_pred()
 acc_op = tf.reduce_mean(tf.cast(tf.equal(pred_op, tf.argmax(y_, axis=1)), tf.float32))
 
-summary_writer = tf.summary.FileWriter("./graphs/gan_mnist", sess.graph)
-
-tf.summary.scalar("D loss", L_D)
-tf.summary.scalar("G loss", L_G)
-
-summary_op = tf.summary.merge_all()
+# summary_writer = tf.summary.FileWriter("./graphs/gan_mnist", sess.graph)
+#
+# tf.summary.scalar("D loss", L_D)
+# tf.summary.scalar("G loss", L_G)
+#
+# summary_op = tf.summary.merge_all()
 
 for i in range(MAX_ITERATION):
     for t in range(N_CRITIC):
@@ -84,11 +84,12 @@ for i in range(MAX_ITERATION):
         ep_feed = np.random.uniform()
 
         sess.run(update_D, feed_dict = {x: batch[0], z: z_feed, epsilon: ep_feed})
+    batch = mnist.train.next_batch(BATCH_SIZE)
     z_feed_2 = np.random.random_sample((BATCH_SIZE, 28, 28, 1))
     sess.run(update_G, feed_dict = {x: batch[0], z: z_feed_2, keep_prob: 1.0})
 
-    summary = sess.run(summary_op, feed_dict = {x: batch[0], z: z_feed, epsilon: ep_feed, keep_prob: 1.0})
-    summary_writer.add_summary(summary, i)
+    # summary = sess.run(summary_op, feed_dict = {x: batch[0], z: z_feed, epsilon: ep_feed, keep_prob: 1.0})
+    # summary_writer.add_summary(summary, i)
     if i % 100 == 0:
         acc = sess.run(acc_op, feed_dict = {x: batch[0], z: z_feed_2, y_: batch[1], keep_prob: 1.0})
         print("This is {}th training iteration and the target accuracy is {}.".format(i+1, acc))
