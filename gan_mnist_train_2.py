@@ -12,11 +12,11 @@ import os
 BATCH_SIZE = 50
 LEARNING_RATE = 1e-6
 N_CRITIC = 3
-MAX_ITERATION = 20000
+MAX_ITERATION = 30000
 LAMBDA = 10
-ALPHA = 0.15
-BETA = 0.15
-GAMMA = 0.85
+ALPHA = 0.5
+BETA = 0.5
+GAMMA = 1.0
 
 def plot_digits(vecs, nrows, ncols):
     data = np.reshape(vecs, [nrows, ncols, -1])
@@ -44,9 +44,9 @@ z = tf.placeholder(tf.float32, [None, 28, 28, 1])
 epsilon = tf.placeholder(tf.float32)
 
 delta_x, G_var = G_mnist(z)
-x_til = delta_x + x
+# x_til = delta_x + x
+x_til = 0.5*(tf.tanh(delta_x) + 1)
 x_til_imgs = tf.reshape(x_til, [-1, 28, 28, 1])
-# x_til = 0.5*(tf.tanh(delta_x) + 1)
 x_hat = epsilon * x + (1-epsilon) * x_til
 Dx, D_var = D_mnist(x)
 Dx_til = D_mnist(x_til, reuse = True)
@@ -59,7 +59,7 @@ simple_conv, target_var = get_easy_conv(x_til, keep_prob)
 
 L_adv = Loss_adv(simple_conv, 3)
 adv_loss = tf.reduce_sum(L_adv)/BATCH_SIZE
-L_hinge = tf.maximum(0.0, tf.norm(delta_x, axis=1) - 0.3)
+L_hinge = tf.maximum(0.0, tf.norm(x_til - x, axis=1) - 0.3)
 diff_loss = tf.reduce_sum(L_hinge)/BATCH_SIZE
 # L_hinge = 0
 L_G = tf.reduce_sum(GAMMA*L_adv - ALPHA * Dx_til + BETA * L_hinge)/BATCH_SIZE
@@ -76,9 +76,9 @@ y_ = tf.placeholder(tf.float32, [None, 10])
 pred_op = simple_conv.get_pred()
 acc_op = tf.reduce_mean(tf.cast(tf.equal(pred_op, tf.argmax(y_, axis=1)), tf.float32))
 
-for f in os.listdir("graphs/gan_mnist"):
-    os.remove("graphs/gan_mnist/"+f)
-summary_writer = tf.summary.FileWriter("./graphs/gan_mnist", sess.graph)
+for f in os.listdir("graphs/gan_mnist_2"):
+    os.remove("graphs/gan_mnist_2/"+f)
+summary_writer = tf.summary.FileWriter("./graphs/gan_mnist_2", sess.graph)
 
 # tf.summary.scalar("D loss", L_D)
 tf.summary.scalar("adv_loss", adv_loss)

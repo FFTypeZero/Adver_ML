@@ -29,7 +29,7 @@ def DeConvNormRelu(x, name, k, kernel, stride, batch_norm, reuse):
         output = tf.nn.relu(output)
     return output
 
-def G_mnist(z, num_of_resi = 2, batch_norm = False, reuse = False):
+def G_mnist(z, num_of_resi = 4, batch_norm = False, reuse = False):
     start_var = set(x.name for x in tf.global_variables())
 
     output = ConvNormRelu(z, "c3s1-8", 8, [3, 3], [1, 1], batch_norm, reuse)
