@@ -11,11 +11,11 @@ import os
 
 BATCH_SIZE = 50
 LEARNING_RATE = 1e-6
-N_CRITIC = 3
+N_CRITIC = 5
 MAX_ITERATION = 30000
 LAMBDA = 10
-ALPHA = 0.5
-BETA = 0.5
+ALPHA = 0.6
+BETA = 0.4
 GAMMA = 1.0
 
 def plot_digits(vecs, nrows, ncols):

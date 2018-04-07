@@ -10,13 +10,13 @@ from generator_mnist import G_mnist
 import os
 
 BATCH_SIZE = 50
-LEARNING_RATE = 1e-6
+LEARNING_RATE = 1e-4
 N_CRITIC = 3
-MAX_ITERATION = 20000
+MAX_ITERATION = 40000
 LAMBDA = 10
 ALPHA = 0.15
 BETA = 0.15
-GAMMA = 0.85
+GAMMA = 2.0
 
 def plot_digits(vecs, nrows, ncols):
     data = np.reshape(vecs, [nrows, ncols, -1])
@@ -44,7 +44,9 @@ z = tf.placeholder(tf.float32, [None, 28, 28, 1])
 epsilon = tf.placeholder(tf.float32)
 
 delta_x, G_var = G_mnist(z)
-x_til = delta_x + x
+x_til = delta_x/10 + x
+# x_til = tf.maximum(x_til, 0.0)
+# x_til = tf.minimum(x_til, 1.0)
 x_til_imgs = tf.reshape(x_til, [-1, 28, 28, 1])
 # x_til = 0.5*(tf.tanh(delta_x) + 1)
 x_hat = epsilon * x + (1-epsilon) * x_til
@@ -57,9 +59,9 @@ L_D = tf.reduce_sum(Dx_til - Dx + LAMBDA * (tf.norm(tf.gradients(Dx_hat, x_hat),
 keep_prob = tf.placeholder(tf.float32)
 simple_conv, target_var = get_easy_conv(x_til, keep_prob)
 
-L_adv = Loss_adv(simple_conv, 3)
+L_adv = Loss_adv(simple_conv, 3, targeted = True)
 adv_loss = tf.reduce_sum(L_adv)/BATCH_SIZE
-L_hinge = tf.maximum(0.0, tf.norm(delta_x, axis=1) - 0.3)
+L_hinge = tf.maximum(0.0, tf.norm(delta_x/10, axis=1) - 0.3)
 diff_loss = tf.reduce_sum(L_hinge)/BATCH_SIZE
 # L_hinge = 0
 L_G = tf.reduce_sum(GAMMA*L_adv - ALPHA * Dx_til + BETA * L_hinge)/BATCH_SIZE
@@ -79,6 +81,7 @@ acc_op = tf.reduce_mean(tf.cast(tf.equal(pred_op, tf.argmax(y_, axis=1)), tf.flo
 for f in os.listdir("graphs/gan_mnist"):
     os.remove("graphs/gan_mnist/"+f)
 summary_writer = tf.summary.FileWriter("./graphs/gan_mnist", sess.graph)
+print("Start!")
 
 # tf.summary.scalar("D loss", L_D)
 tf.summary.scalar("adv_loss", adv_loss)
@@ -105,6 +108,8 @@ for i in range(MAX_ITERATION):
     if i % 100 == 0:
         acc = sess.run(acc_op, feed_dict = {x: batch[0], z: z_feed_2, y_: batch[1], keep_prob: 1.0})
         print("This is {}th training iteration and the target accuracy is {}.".format(i+1, acc))
+        if acc < 0.2:
+            break
 
 
 test_images = mnist.test.images[0:100]
