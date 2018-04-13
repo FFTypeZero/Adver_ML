@@ -10,12 +10,12 @@ from generator_mnist import G_mnist
 import os
 
 BATCH_SIZE = 50
-LEARNING_RATE = 1e-6
+LEARNING_RATE = 1e-5
 N_CRITIC = 5
 MAX_ITERATION = 30000
 LAMBDA = 10
-ALPHA = 0.6
-BETA = 0.4
+ALPHA = 5
+BETA = 17
 GAMMA = 1.0
 
 def plot_digits(vecs, nrows, ncols):
@@ -23,7 +23,7 @@ def plot_digits(vecs, nrows, ncols):
     f, axs = plt.subplots(nrows, ncols)
     for i in range(nrows):
         for j in range(ncols):
-            axs[i][j].imshow(np.reshape(data[i][j], [28, 28], order = 'C'))
+            axs[i][j].imshow(np.reshape(data[i][j], [28, 28], order = 'C'), cmap = 'gray')
             axs[i][j].axis('off')
     plt.show()
 
@@ -38,14 +38,17 @@ def Loss_adv(model, target, confidence = 0, targeted = True):
         return tf.maximum(0.0, tar - other + confidence)
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot = True)
+test_images = mnist.test.images[0:100]
+plot_digits(test_images, 10, 10)
 
 x = tf.placeholder(tf.float32, [None, 784])
-z = tf.placeholder(tf.float32, [None, 28, 28, 1])
+# z = tf.placeholder(tf.float32, [None, 28, 28, 1])
+z = tf.reshape(x, [-1, 28, 28, 1])
 epsilon = tf.placeholder(tf.float32)
 
 delta_x, G_var = G_mnist(z)
 # x_til = delta_x + x
-x_til = 0.5*(tf.tanh(delta_x) + 1)
+x_til = 0.5*(tf.tanh(delta_x/10) + 1)
 x_til_imgs = tf.reshape(x_til, [-1, 28, 28, 1])
 x_hat = epsilon * x + (1-epsilon) * x_til
 Dx, D_var = D_mnist(x)
@@ -91,27 +94,32 @@ summary_op = tf.summary.merge_all()
 for i in range(MAX_ITERATION):
     for t in range(N_CRITIC):
         batch = mnist.train.next_batch(BATCH_SIZE)
-        z_feed = np.random.random_sample((BATCH_SIZE, 28, 28, 1))
+        # z_feed = np.random.random_sample((BATCH_SIZE, 28, 28, 1))
         ep_feed = np.random.uniform()
 
-        sess.run(update_D, feed_dict = {x: batch[0], z: z_feed, epsilon: ep_feed})
+        # sess.run(update_D, feed_dict = {x: batch[0], z: z_feed, epsilon: ep_feed})
+        sess.run(update_D, feed_dict = {x: batch[0], epsilon: ep_feed})
     batch = mnist.train.next_batch(BATCH_SIZE)
-    z_feed_2 = np.random.random_sample((BATCH_SIZE, 28, 28, 1))
-    _, summary = sess.run([update_G, summary_op], feed_dict = {x: batch[0], z: z_feed_2, keep_prob: 1.0})
+    # z_feed_2 = np.random.random_sample((BATCH_SIZE, 28, 28, 1))
+    # _, summary = sess.run([update_G, summary_op], feed_dict = {x: batch[0], z: z_feed_2, keep_prob: 1.0})
+    _, summary = sess.run([update_G, summary_op], feed_dict = {x: batch[0], keep_prob: 1.0})
     summary_writer.add_summary(summary, i)
 
     # summary = sess.run(summary_op, feed_dict = {x: batch[0], z: z_feed, epsilon: ep_feed, keep_prob: 1.0})
     # summary_writer.add_summary(summary, i)
     if i % 100 == 0:
-        acc = sess.run(acc_op, feed_dict = {x: batch[0], z: z_feed_2, y_: batch[1], keep_prob: 1.0})
+        # acc = sess.run(acc_op, feed_dict = {x: batch[0], z: z_feed_2, y_: batch[1], keep_prob: 1.0})
+        acc = sess.run(acc_op, feed_dict = {x: batch[0], y_: batch[1], keep_prob: 1.0})
         print("This is {}th training iteration and the target accuracy is {}.".format(i+1, acc))
 
 
 test_images = mnist.test.images[0:100]
 test_labels = mnist.test.labels[0:100]
-z_test = np.random.random_sample((100, 28, 28, 1))
-test_acc = sess.run(acc_op, feed_dict = {x: test_images, z: z_test, y_: test_labels, keep_prob: 1.0})
-adv_imgs = sess.run(x_til, feed_dict = {x: test_images, z: z_test})
+# z_test = np.random.random_sample((100, 28, 28, 1))
+# test_acc = sess.run(acc_op, feed_dict = {x: test_images, z: z_test, y_: test_labels, keep_prob: 1.0})
+# adv_imgs = sess.run(x_til, feed_dict = {x: test_images, z: z_test})
+test_acc = sess.run(acc_op, feed_dict = {x: test_images, y_: test_labels, keep_prob: 1.0})
+adv_imgs = sess.run(x_til, feed_dict = {x: test_images})
 plot_digits(adv_imgs, 10, 10)
 print(np.amax(adv_imgs))
 print(np.amin(adv_imgs))

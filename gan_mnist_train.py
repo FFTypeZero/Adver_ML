@@ -14,16 +14,16 @@ LEARNING_RATE = 1e-4
 N_CRITIC = 3
 MAX_ITERATION = 40000
 LAMBDA = 10
-ALPHA = 0.15
-BETA = 0.15
-GAMMA = 2.0
+ALPHA = 0.3
+BETA = 0.7
+GAMMA = 1.0
 
 def plot_digits(vecs, nrows, ncols):
     data = np.reshape(vecs, [nrows, ncols, -1])
     f, axs = plt.subplots(nrows, ncols)
     for i in range(nrows):
         for j in range(ncols):
-            axs[i][j].imshow(np.reshape(data[i][j], [28, 28], order = 'C'))
+            axs[i][j].imshow(np.reshape(data[i][j], [28, 28], order = 'C'), cmap = 'gray')
             axs[i][j].axis('off')
     plt.show()
 
@@ -108,7 +108,7 @@ for i in range(MAX_ITERATION):
     if i % 100 == 0:
         acc = sess.run(acc_op, feed_dict = {x: batch[0], z: z_feed_2, y_: batch[1], keep_prob: 1.0})
         print("This is {}th training iteration and the target accuracy is {}.".format(i+1, acc))
-        if acc < 0.2:
+        if acc < 0.35:
             break
 
 
