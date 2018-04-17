@@ -38,8 +38,8 @@ def Loss_adv(model, target, confidence = 0, targeted = True):
         return tf.maximum(0.0, tar - other + confidence)
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot = True)
-test_images = mnist.test.images[0:100]
-plot_digits(test_images, 10, 10)
+# test_images = mnist.test.images[0:100]
+# plot_digits(test_images, 10, 10)
 
 x = tf.placeholder(tf.float32, [None, 784])
 # z = tf.placeholder(tf.float32, [None, 28, 28, 1])
