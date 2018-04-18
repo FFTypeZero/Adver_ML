@@ -5,9 +5,19 @@ from tensorflow.examples.tutorials.mnist import input_data
 from model import model
 from CW_attack import l2_attack
 from get_model import get_easy_conv
+from get_model import get_BN_conv
 from discriminator_mnist import D_mnist
 from generator_mnist import G_mnist
 import os
+
+def plot_digits(vecs, nrows, ncols):
+    data = np.reshape(vecs, [nrows, ncols, -1])
+    f, axs = plt.subplots(nrows, ncols)
+    for i in range(nrows):
+        for j in range(ncols):
+            axs[i][j].imshow(np.reshape(data[i][j], [28, 28], order = 'C'), cmap = 'gray')
+            axs[i][j].axis('off')
+    plt.show()
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot = True)
 
@@ -38,3 +48,8 @@ for i in range(20):
     acc = sess.run(acc_op, feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
     test_acc.append(acc)
 print("The test accuracy is {}.".format(np.mean(test_acc)))
+
+test_images = mnist.test.images[0:100]
+adv_imgs = sess.run(x_til, feed_dict = {x: test_images})
+plot_digits(adv_imgs, 10, 10)
+plot_digits(test_images, 10, 10)

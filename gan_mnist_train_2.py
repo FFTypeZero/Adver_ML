@@ -5,6 +5,8 @@ from tensorflow.examples.tutorials.mnist import input_data
 from model import model
 from CW_attack import l2_attack
 from get_model import get_easy_conv
+from get_model import get_max_conv
+from get_model import get_BN_conv
 from discriminator_mnist import D_mnist
 from generator_mnist import G_mnist
 import os
@@ -51,16 +53,17 @@ delta_x, G_var = G_mnist(z)
 x_til = 0.5*(tf.tanh(delta_x/10) + 1)
 x_til_imgs = tf.reshape(x_til, [-1, 28, 28, 1])
 x_hat = epsilon * x + (1-epsilon) * x_til
+
+keep_prob = tf.placeholder(tf.float32)
+simple_conv, target_var = get_BN_conv(x_til, keep_prob)
+
 Dx, D_var = D_mnist(x)
 Dx_til = D_mnist(x_til, reuse = True)
 Dx_hat = D_mnist(x_hat, reuse = True)
 
 L_D = tf.reduce_sum(Dx_til - Dx + LAMBDA * (tf.norm(tf.gradients(Dx_hat, x_hat), axis=1) - 1)**2)/BATCH_SIZE
 
-keep_prob = tf.placeholder(tf.float32)
-simple_conv, target_var = get_easy_conv(x_til, keep_prob)
-
-L_adv = Loss_adv(simple_conv, 3)
+L_adv = Loss_adv(simple_conv, 5)
 adv_loss = tf.reduce_sum(L_adv)/BATCH_SIZE
 L_hinge = tf.maximum(0.0, tf.norm(x_til - x, axis=1) - 0.3)
 diff_loss = tf.reduce_sum(L_hinge)/BATCH_SIZE
@@ -73,7 +76,7 @@ update_G = tf.train.AdamOptimizer(LEARNING_RATE).minimize(L_G, var_list = G_var)
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver(var_list = target_var)
-saver.restore(sess, "saved_models/easy_conv/")
+saver.restore(sess, "saved_models/BN_conv/")
 
 y_ = tf.placeholder(tf.float32, [None, 10])
 pred_op = simple_conv.get_pred()
@@ -112,8 +115,8 @@ for i in range(MAX_ITERATION):
         # acc = sess.run(acc_op, feed_dict = {x: batch[0], z: z_feed_2, y_: batch[1], keep_prob: 1.0})
         acc = sess.run(acc_op, feed_dict = {x: batch[0], y_: batch[1], keep_prob: 1.0})
         print("This is {}th training iteration and the target accuracy is {}.".format(i+1, acc))
-        saver2.save(sess, "saved_models/G_easy/")
-saver2.save(sess, "saved_models/G_easy/")
+        saver2.save(sess, "saved_models/G_BN/")
+saver2.save(sess, "saved_models/G_BN/")
 
 test_images = mnist.test.images[0:100]
 test_labels = mnist.test.labels[0:100]
