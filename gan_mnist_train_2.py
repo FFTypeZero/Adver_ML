@@ -90,6 +90,7 @@ tf.summary.scalar("diff_loss", diff_loss)
 tf.summary.image("adv_imgs", x_til_imgs)
 
 summary_op = tf.summary.merge_all()
+saver2 = tf.train.Saver(var_list = G_var)
 
 for i in range(MAX_ITERATION):
     for t in range(N_CRITIC):
@@ -111,7 +112,8 @@ for i in range(MAX_ITERATION):
         # acc = sess.run(acc_op, feed_dict = {x: batch[0], z: z_feed_2, y_: batch[1], keep_prob: 1.0})
         acc = sess.run(acc_op, feed_dict = {x: batch[0], y_: batch[1], keep_prob: 1.0})
         print("This is {}th training iteration and the target accuracy is {}.".format(i+1, acc))
-
+        saver2.save(sess, "saved_models/G_easy/")
+saver2.save(sess, "saved_models/G_easy/")
 
 test_images = mnist.test.images[0:100]
 test_labels = mnist.test.labels[0:100]
@@ -121,8 +123,7 @@ test_labels = mnist.test.labels[0:100]
 test_acc = sess.run(acc_op, feed_dict = {x: test_images, y_: test_labels, keep_prob: 1.0})
 adv_imgs = sess.run(x_til, feed_dict = {x: test_images})
 plot_digits(adv_imgs, 10, 10)
-print(np.amax(adv_imgs))
-print(np.amin(adv_imgs))
+print(test_acc)
 
 #
 # pred_op = simple_conv2.get_pred()
