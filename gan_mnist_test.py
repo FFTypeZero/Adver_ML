@@ -41,7 +41,7 @@ pred_op = simple_conv.get_pred()
 acc_op = tf.reduce_mean(tf.cast(tf.equal(pred_op, tf.argmax(y_, axis=1)), tf.float32))
 
 saver2 = tf.train.Saver(var_list = G_var)
-saver2.restore(sess, "saved_models/G_max/")
+saver2.restore(sess, "saved_models/G_easy/")
 
 test_acc = []
 preds_num = []
