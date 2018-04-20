@@ -22,16 +22,16 @@ sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 
 saver = tf.train.Saver()
-# saver.restore(sess, "saved_models/max_conv/")
+saver.restore(sess, "saved_models/BN_conv/")
 
-for i in range(30000):
-    batch = mnist.train.next_batch(50)
-    sess.run(train_step, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
-    if i % 100 == 0:
-        train_accuracy = sess.run(accuracy, feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
-        print("step %d, training accuracy %g" % (i, train_accuracy))
-        saver.save(sess, "saved_models/BN_conv/")
-saver.save(sess, "saved_models/BN_conv/")
+# for i in range(30000):
+#     batch = mnist.train.next_batch(50)
+#     sess.run(train_step, feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
+#     if i % 100 == 0:
+#         train_accuracy = sess.run(accuracy, feed_dict={x: batch[0], y_: batch[1], keep_prob: 1.0})
+#         print("step %d, training accuracy %g" % (i, train_accuracy))
+#         saver.save(sess, "saved_models/BN_conv/")
+# saver.save(sess, "saved_models/BN_conv/")
 
 # test_data = Batch_Creator(mnist.test)
 test_acc = []
