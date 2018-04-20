@@ -125,13 +125,13 @@ class BN_conv(Model):
         x_image = tf.reshape(x, [-1, 28, 28, 1])
         output = ConvNormRelu(x_image, 64, [8, 8], [1, 1])
         output = ConvNormRelu(output, 128, [6, 6], [1, 1])
-        output = tf.nn.dropout(output, keep_prob)
+        output = tf.nn.dropout(output, self.keep_prob)
 
         output = ConvNormRelu(output, 128, [4, 4], [1, 1])
         shape = output.get_shape().as_list()
         output = tf.reshape(output, [-1, shape[1]*shape[2]*shape[3]])
         output = tf.layers.dense(output, 50, tf.nn.relu)
-        output = tf.nn.dropout(output, keep_prob)
+        output = tf.nn.dropout(output, self.keep_prob)
 
         y_conv = tf.layers.dense(output, 10, tf.nn.relu)
 
