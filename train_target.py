@@ -9,7 +9,7 @@ mnist = input_data.read_data_sets("MNIST_data/", one_hot = True)
 
 x = tf.placeholder(tf.float32, [None, 784])
 keep_prob = tf.placeholder(tf.float32)
-BN_conv, conv_var = get_BN_conv(x, keep_prob)
+BN_conv, conv_var = get_max_conv(x, keep_prob)
 cross_entropy = BN_conv.loss
 y_ = BN_conv.label_ph
 y_conv = BN_conv.logits
@@ -22,7 +22,7 @@ sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 
 saver = tf.train.Saver()
-saver.restore(sess, "saved_models/BN_conv/")
+saver.restore(sess, "saved_models/max_conv/")
 
 # for i in range(30000):
 #     batch = mnist.train.next_batch(50)

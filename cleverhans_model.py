@@ -22,6 +22,9 @@ class easy_conv(Model):
 
         self.keep_prob = keep_prob
         self.model_var = None
+        self.image_size = 28
+        self.num_channels = 1
+        self.num_labels = 10
 
     def fprop(self, x):
         start_var = set(v.name for v in tf.global_variables())
@@ -62,6 +65,10 @@ class easy_conv(Model):
 
         return ["probs", "logits"]
 
+    def predict(self, x):
+
+        return self.fprop(x)["logits"]
+
 def ConvMaxBloc(x, k, kernel, stride):
     output = tf.layers.conv2d(x, k, kernel, stride, padding='SAME')
     output = tf.nn.relu(output)
@@ -77,6 +84,9 @@ class max_conv(Model):
 
         self.keep_prob = keep_prob
         self.model_var = None
+        self.image_size = 28
+        self.num_channels = 1
+        self.num_labels = 10
 
     def fprop(self, x):
         start_var = set(v.name for v in tf.global_variables())
@@ -106,6 +116,10 @@ class max_conv(Model):
 
         return ["probs", "logits"]
 
+    def predict(self, x):
+
+        return self.fprop(x)["logits"]
+
 def ConvNormRelu(x, k, kernel, stride):
     output = tf.layers.conv2d(x, k, kernel, stride, padding='SAME')
     output = tf.layers.batch_normalization(output)
@@ -118,6 +132,9 @@ class BN_conv(Model):
 
         self.keep_prob = keep_prob
         self.model_var = None
+        self.image_size = 28
+        self.num_channels = 1
+        self.num_labels = 10
 
     def fprop(self, x):
         start_var = set(v.name for v in tf.global_variables())
@@ -148,3 +165,7 @@ class BN_conv(Model):
     def get_layer_names(self):
 
         return ["probs", "logits"]
+
+    def predict(self, x):
+
+        return self.fprop(x)["logits"]
