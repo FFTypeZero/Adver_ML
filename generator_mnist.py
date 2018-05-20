@@ -15,7 +15,7 @@ def ResiBlock(x, name, k, kernel, stride, reuse):
     with tf.variable_scope(name, reuse = reuse):
         output = tf.layers.conv2d(x, k, kernel, stride, padding='SAME')
         output = tf.nn.relu(output)
-        output = tf.layers.conv2d(x, k, kernel, stride, padding='SAME')
+        output = tf.layers.conv2d(output, k, kernel, stride, padding='SAME')
         output = tf.nn.relu(output + x)
     return output
 

@@ -17,7 +17,7 @@ N_CRITIC = 5
 MAX_ITERATION = 30000
 LAMBDA = 10
 ALPHA = 5
-BETA = 17
+BETA = 60
 GAMMA = 1.0
 
 def plot_digits(vecs, nrows, ncols):
@@ -50,24 +50,25 @@ epsilon = tf.placeholder(tf.float32)
 delta_x, G_var = G_mnist(z)
 x_til = 0.5*(tf.tanh(delta_x/10) + 1)
 x_til_imgs = tf.reshape(x_til, [-1, 28, 28, 1])
-x_hat = epsilon * x + (1-epsilon) * x_til
+# x_hat = epsilon * x + (1-epsilon) * x_til
 
 keep_prob = tf.placeholder(tf.float32)
 simple_conv, target_var = get_BN_conv(x_til, keep_prob)
 
-Dx, D_var = D_mnist(x)
-Dx_til = D_mnist(x_til, reuse = True)
-Dx_hat = D_mnist(x_hat, reuse = True)
+# Dx, D_var = D_mnist(x)
+# Dx_til = D_mnist(x_til, reuse = True)
+# Dx_hat = D_mnist(x_hat, reuse = True)
 
-L_D = tf.reduce_sum(Dx_til - Dx + LAMBDA * (tf.norm(tf.gradients(Dx_hat, x_hat), axis=1) - 1)**2)/BATCH_SIZE
+# L_D = tf.reduce_sum(Dx_til - Dx + LAMBDA * (tf.norm(tf.gradients(Dx_hat, x_hat), axis=1) - 1)**2)/BATCH_SIZE
 
-L_adv = Loss_adv(simple_conv, 3, confidence = 0)
+L_adv = Loss_adv(simple_conv, 5, confidence = 0)
 adv_loss = tf.reduce_sum(L_adv)/BATCH_SIZE
-L_hinge = tf.maximum(0.0, tf.norm(x_til - x, axis=1) - 0.3)
+L_hinge = tf.maximum(0.0, tf.norm(x_til - x, axis=1))
 diff_loss = tf.reduce_sum(L_hinge)/BATCH_SIZE
-L_G = tf.reduce_sum(GAMMA*L_adv - ALPHA * Dx_til + BETA * L_hinge)/BATCH_SIZE
+# L_G = tf.reduce_sum(GAMMA*L_adv - ALPHA * Dx_til + BETA * L_hinge)/BATCH_SIZE
+L_G = tf.reduce_sum(GAMMA*L_adv + BETA * L_hinge)/BATCH_SIZE
 
-update_D = tf.train.AdamOptimizer(LEARNING_RATE).minimize(L_D, var_list = D_var)
+# update_D = tf.train.AdamOptimizer(LEARNING_RATE).minimize(L_D, var_list = D_var)
 update_G = tf.train.AdamOptimizer(LEARNING_RATE).minimize(L_G, var_list = G_var)
 
 sess = tf.Session()
@@ -93,11 +94,11 @@ summary_op = tf.summary.merge_all()
 saver2 = tf.train.Saver(var_list = G_var)
 
 for i in range(MAX_ITERATION):
-    for t in range(N_CRITIC):
-        batch = mnist.train.next_batch(BATCH_SIZE)
-        ep_feed = np.random.uniform()
-
-        sess.run(update_D, feed_dict = {x: batch[0], epsilon: ep_feed})
+    # for t in range(N_CRITIC):
+    #     batch = mnist.train.next_batch(BATCH_SIZE)
+    #     ep_feed = np.random.uniform()
+    #
+    #     sess.run(update_D, feed_dict = {x: batch[0], epsilon: ep_feed})
     batch = mnist.train.next_batch(BATCH_SIZE)
     _, summary = sess.run([update_G, summary_op], feed_dict = {x: batch[0], keep_prob: 1.0})
     summary_writer.add_summary(summary, i)
@@ -105,8 +106,8 @@ for i in range(MAX_ITERATION):
     if i % 100 == 0:
         acc, adv_value = sess.run([acc_op, adv_loss], feed_dict = {x: batch[0], y_: batch[1], keep_prob: 1.0})
         print("Step {}, target accuracy {} and adversarial loss {}.".format(i+1, acc, adv_value))
-        saver2.save(sess, "saved_models/G_BN/")
-saver2.save(sess, "saved_models/G_BN/")
+        saver2.save(sess, "saved_models/G_noD_BN/")
+saver2.save(sess, "saved_models/G_noD_BN/")
 
 test_images = mnist.test.images[0:100]
 test_labels = mnist.test.labels[0:100]
