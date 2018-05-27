@@ -78,7 +78,7 @@ diff_loss = tf.reduce_sum(-L_D)/BATCH_SIZE
 L_G = tf.reduce_sum(GAMMA * L_adv - ALPHA * L_D)/BATCH_SIZE
 
 update_D = tf.train.AdamOptimizer(LEARNING_RATE).minimize(L_D, var_list = D_var)
-update_G = tf.train.AdamOptimizer(LEARNING_RATE).minimize(L_G, var_list = G_var)
+update_G = tf.train.AdamOptimizer(LEARNING_RATE*10).minimize(L_G, var_list = G_var)
 
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
