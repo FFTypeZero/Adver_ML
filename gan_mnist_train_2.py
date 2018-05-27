@@ -59,7 +59,7 @@ x_til_imgs = tf.reshape(x_til, [-1, 28, 28, 1])
 # x_hat = epsilon * x + (1-epsilon) * x_til
 
 keep_prob = tf.placeholder(tf.float32)
-simple_conv, target_var = get_BN_conv(x_til, keep_prob)
+simple_conv, target_var = get_easy_conv(x_til, keep_prob)
 
 # Dx, D_var = D_mnist(x)
 # Dx_til = D_mnist(x_til, reuse = True)
@@ -81,7 +81,7 @@ update_G = tf.train.AdamOptimizer(LEARNING_RATE).minimize(L_G, var_list = G_var)
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver(var_list = target_var)
-saver.restore(sess, "saved_models/BN_conv/")
+saver.restore(sess, "saved_models/easy_conv/")
 
 y_ = tf.placeholder(tf.float32, [None, 10])
 pred_op = simple_conv.get_pred()
@@ -113,8 +113,8 @@ for i in range(MAX_ITERATION):
     if i % 100 == 0:
         acc, adv_value = sess.run([acc_op, adv_loss], feed_dict = {x: batch[0], y_: batch[1], keep_prob: 1.0})
         print("Step {}, target accuracy {} and adversarial loss {}.".format(i+1, acc, adv_value))
-        saver2.save(sess, "saved_models/G_noD_BN/")
-saver2.save(sess, "saved_models/G_noD_BN/")
+        saver2.save(sess, "saved_models/G_noD_easy/")
+saver2.save(sess, "saved_models/G_noD_easy/")
 
 test_images = mnist.test.images[0:100]
 test_labels = mnist.test.labels[0:100]
