@@ -22,7 +22,7 @@ def D_mnist(x, kernel = [4, 4], stride = [2, 2], leak_slope = 0.2, batch_norm = 
 
     shape = output.get_shape().as_list()
     output = tf.reshape(output, [-1, shape[1]*shape[2]*shape[3]])
-    output = tf.layers.dense(output, 1, tf.nn.relu)
+    output = tf.layers.dense(output, 1, tf.nn.relu, name = "D_dense", reuse = reuse)
 
     end_var = tf.global_variables()
     new_var = [v for v in end_var if v.name not in start_var]
