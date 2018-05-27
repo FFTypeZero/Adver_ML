@@ -17,8 +17,8 @@ N_CRITIC = 5
 MAX_ITERATION = 30000
 LAMBDA = 10
 ALPHA = 5
-BETA = 60
-GAMMA = 1.0
+BETA = 1.0
+GAMMA = 0.1
 
 def plot_digits(vecs, nrows, ncols):
     data = np.reshape(vecs, [nrows, ncols, -1])
