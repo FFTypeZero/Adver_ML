@@ -33,11 +33,17 @@ def Loss_adv(model, target, confidence = 0, targeted = True):
     target_labels = tf.one_hot(target, depth = 10)
     lo = model.get_logits()
     other = tf.reduce_max((1 - target_labels)*lo - target_labels*10, axis=1)
-    tar = tf.reduce_max(target_labels*lo, axis=1)
+    # tar = tf.reduce_max(target_labels*lo, axis=1)
+    tar = tf.matmul(lo, target_labels)
     if targeted:
         return tf.maximum(0.0, other - tar + confidence)
     else:
         return tf.maximum(0.0, tar - other + confidence)
+
+def loss_simple_adv(model, target, targeted = True):
+	target_labels = tf.one_hot(target, depth = 10)
+	lo = model.get_logits()
+	return tf.matmul(lo, target_labels)
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot = True)
 # test_images = mnist.test.images[0:100]
@@ -61,7 +67,8 @@ simple_conv, target_var = get_BN_conv(x_til, keep_prob)
 
 # L_D = tf.reduce_sum(Dx_til - Dx + LAMBDA * (tf.norm(tf.gradients(Dx_hat, x_hat), axis=1) - 1)**2)/BATCH_SIZE
 
-L_adv = Loss_adv(simple_conv, 5, confidence = 0)
+# L_adv = Loss_adv(simple_conv, 5, confidence = 0)
+L_adv = loss_simple_adv(simple_conv, 3)
 adv_loss = tf.reduce_sum(L_adv)/BATCH_SIZE
 L_hinge = tf.maximum(0.0, tf.norm(x_til - x, axis=1))
 diff_loss = tf.reduce_sum(L_hinge)/BATCH_SIZE
@@ -112,6 +119,8 @@ saver2.save(sess, "saved_models/G_noD_BN/")
 test_images = mnist.test.images[0:100]
 test_labels = mnist.test.labels[0:100]
 test_acc = sess.run(acc_op, feed_dict = {x: test_images, y_: test_labels, keep_prob: 1.0})
+test_pred = sess.run(pred_op, feed_dict = {x: test_images, keep_prob: 1.0})
 adv_imgs = sess.run(x_til, feed_dict = {x: test_images})
 plot_digits(adv_imgs, 10, 10)
 print(test_acc)
+print(test_pred)
