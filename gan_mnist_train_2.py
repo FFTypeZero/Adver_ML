@@ -33,8 +33,8 @@ def Loss_adv(model, target, confidence = 0, targeted = True):
     target_labels = tf.one_hot(target, depth = 10)
     lo = model.get_logits()
     other = tf.reduce_max((1 - target_labels)*lo - target_labels*10, axis=1)
-    # tar = tf.reduce_max(target_labels*lo, axis=1)
-    tar = tf.einsum('ij, j->i', lo, target_labels)
+    tar = tf.reduce_max(target_labels*lo, axis=1)
+    # tar = tf.einsum('ij, j->i', lo, target_labels)
     if targeted:
         return tf.maximum(0.0, other - tar + confidence)
     else:
@@ -43,8 +43,7 @@ def Loss_adv(model, target, confidence = 0, targeted = True):
 def loss_simple_adv(model, target, targeted = True):
 	target_labels = tf.one_hot(target, depth = 10)
 	lo = model.get_logits()
-	# return tf.matmul(lo, target_labels)
-	return tf.einsum('ij, j->i', lo, target_labels)
+	return -tf.reduce_max(target_labels*lo, axis=1)
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot = True)
 # test_images = mnist.test.images[0:100]
