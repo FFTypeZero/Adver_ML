@@ -72,7 +72,7 @@ L_D = -tf.reduce_sum((Dx_til - Dx)*(Dx_til - Dx))/BATCH_SIZE
 L_adv = loss_simple_adv(simple_conv, 3)
 adv_loss = tf.reduce_sum(L_adv)/BATCH_SIZE
 # L_hinge = tf.maximum(0.0, tf.norm(x_til - x, axis=1))
-diff_loss = tf.reduce_sum(L_D)/BATCH_SIZE
+diff_loss = tf.reduce_sum(-L_D)/BATCH_SIZE
 # L_G = tf.reduce_sum(GAMMA*L_adv - ALPHA * Dx_til + BETA * L_hinge)/BATCH_SIZE
 # L_G = tf.reduce_sum(GAMMA*L_adv + BETA * L_hinge)/BATCH_SIZE
 L_G = tf.reduce_sum(GAMMA * L_adv - ALPHA * L_D)/BATCH_SIZE
