@@ -18,7 +18,7 @@ MAX_ITERATION = 30000
 LAMBDA = 10
 ALPHA = 5
 BETA = 1.0
-GAMMA = 0.1
+GAMMA = 2.5
 
 def plot_digits(vecs, nrows, ncols):
     data = np.reshape(vecs, [nrows, ncols, -1])
@@ -42,7 +42,7 @@ def Loss_adv(model, target, confidence = 0, targeted = True):
 
 def loss_simple_adv(model, target, targeted = True):
 	target_labels = tf.one_hot(target, depth = 10)
-	lo = model.get_logits()
+	lo = model.get_prob()
 	return -tf.reduce_max(target_labels*lo, axis=1)
 
 mnist = input_data.read_data_sets("MNIST_data/", one_hot = True)
@@ -53,8 +53,10 @@ x = tf.placeholder(tf.float32, [None, 784])
 z = tf.reshape(x, [-1, 28, 28, 1])
 epsilon = tf.placeholder(tf.float32)
 
-delta_x, G_var = G_mnist(z)
-x_til = 0.5*(tf.tanh(delta_x/10) + 1)
+delta_x, G_var = G_mnist(z, num_of_resi = 2)
+#x_til = 0.5*(tf.sin(delta_x) + 1)
+x_til = tf.nn.relu(delta_x)
+#x_til = x + delta_x
 x_til_imgs = tf.reshape(x_til, [-1, 28, 28, 1])
 # x_hat = epsilon * x + (1-epsilon) * x_til
 
@@ -68,7 +70,7 @@ simple_conv, target_var = get_easy_conv(x_til, keep_prob)
 # L_D = tf.reduce_sum(Dx_til - Dx + LAMBDA * (tf.norm(tf.gradients(Dx_hat, x_hat), axis=1) - 1)**2)/BATCH_SIZE
 
 # L_adv = Loss_adv(simple_conv, 5, confidence = 0)
-L_adv = loss_simple_adv(simple_conv, 3)
+L_adv = loss_simple_adv(simple_conv, 7)
 adv_loss = tf.reduce_sum(L_adv)/BATCH_SIZE
 L_hinge = tf.maximum(0.0, tf.norm(x_til - x, axis=1))
 diff_loss = tf.reduce_sum(L_hinge)/BATCH_SIZE
@@ -99,6 +101,7 @@ tf.summary.image("adv_imgs", x_til_imgs)
 
 summary_op = tf.summary.merge_all()
 saver2 = tf.train.Saver(var_list = G_var)
+# saver2.restore(sess, "saved_models/G_noD_easy/")
 
 for i in range(MAX_ITERATION):
     # for t in range(N_CRITIC):
