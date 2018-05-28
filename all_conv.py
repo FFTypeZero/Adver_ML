@@ -84,6 +84,8 @@ train_op = tf.train.AdamOptimizer(learning_rate = GAMMA).minimize(loss)
 correct_prediction = tf.equal(tf.argmax(y_, 1), tf.argmax(conv9_flat, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
+saver = tf.train.Saver()
+
 #Model Training and Evaluation
 ini_op = tf.global_variables_initializer()
 with tf.Session() as sess:
@@ -95,6 +97,8 @@ with tf.Session() as sess:
         if i % 500 == 0:
             train_accuracy = accuracy.eval(feed_dict = {x: batchxs, y: batchys, if_drop: False})
             print('step %d, training accuracy %g' % (i, train_accuracy))
+            saver.save(sess, "saved_models/all_conv")
+        saver.save(sess, "saved_models/all_conv")
     for j in range(20):
         testxs, testys = cifar10_test.next_batch(500)
         test_accuracy.append(accuracy.eval(feed_dict = {x: testxs, y: testys, if_drop: False}))
