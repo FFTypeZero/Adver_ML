@@ -81,7 +81,7 @@ loss = cross_entropy + regularizer
 # train_op = tf.train.MomentumOptimizer(learning_rate = lr, momentum = MOMENTUM).minimize(loss, global_step = global_step)
 train_op = tf.train.AdamOptimizer(learning_rate = GAMMA).minimize(loss)
 
-correct_prediction = tf.equal(tf.argmax(y_, 1), tf.argmax(conv9_flat, 1))
+correct_prediction = tf.equal(tf.argmax(y_, 1), tf.argmax(global_ave_pool, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 saver = tf.train.Saver()
