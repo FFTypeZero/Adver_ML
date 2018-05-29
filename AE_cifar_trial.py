@@ -76,7 +76,8 @@ x_til = 0.5*(tf.tanh(delta_x/10) + 1)
 if_drop = tf.placeholder(tf.bool)
 simple_conv, target_var = get_all_conv(x_til, if_drop)
 
-L_hinge = tf.maximum(0.0, tf.norm(x_til - x, axis = [1, 2, 3]))
+diff_x = tf.reshape(x_til - x, [-1, 32*32*3])
+L_hinge = tf.maximum(0.0, tf.norm(diff_x, axis = [1]))
 diff_loss = tf.reduce_sum(L_hinge)/BATCH_SIZE
 L_G = tf.reduce_sum(L_hinge)/BATCH_SIZE
 
