@@ -158,7 +158,7 @@ def get_all_conv(x, if_drop):
     end_var = tf.global_variables()
     new_var = [v for v in end_var if v.name not in start_var]
 
-    all_conv = model(global_ave_pool, cross_entropy [x, if_drop], y_)
+    all_conv = model(global_ave_pool, cross_entropy, [x, if_drop], y_)
 
     return all_conv, new_var
 
