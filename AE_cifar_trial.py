@@ -68,6 +68,7 @@ cifar10_test = Batch_Creator(test)
 
 x = tf.placeholder(tf.float32, [None, 32, 32, 3])
 z = tf.placeholder(tf.float32, [None, 32, 32, 3])
+if_drop = tf.placeholder(tf.bool)
 simple_conv, target_var = get_all_conv(z, if_drop)
 
 epsilon = tf.placeholder(tf.float32)
@@ -75,8 +76,6 @@ epsilon = tf.placeholder(tf.float32)
 delta_x, G_var = G_mnist(x)
 x_til = 0.5*(tf.tanh(delta_x/10) + 1)
 # x_til_imgs = tf.reshape(x_til, [-1, 28, 28, 1])
-
-if_drop = tf.placeholder(tf.bool)
 
 
 diff_x = tf.reshape(x_til - x, [-1, 32*32*3])
