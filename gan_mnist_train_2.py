@@ -56,9 +56,9 @@ epsilon = tf.placeholder(tf.float32)
 delta_x, G_var = G_mnist(z, 1, num_of_resi = 2)
 delta_x = tf.reshape(delta_x, [-1, 28*28])
 #x_til = 0.5*(tf.sin(delta_x) + 1)
-condition = tf.greater(delta_x, tf.ones(tf.shape(delta_x)))
-x_til = tf.where(condition, tf.nn.relu(delta_x), tf.zeros(tf.shape(delta_x)))
-# x_til = tf.nn.relu(delta_x)
+# condition = tf.greater(delta_x, tf.ones(tf.shape(delta_x)))
+# x_til = tf.where(condition, tf.nn.relu(delta_x), tf.zeros(tf.shape(delta_x)))
+x_til = tf.nn.relu(delta_x)
 #x_til = x + delta_x
 x_til_imgs = tf.reshape(x_til, [-1, 28, 28, 1])
 # x_hat = epsilon * x + (1-epsilon) * x_til
