@@ -129,7 +129,8 @@ def get_BN_conv(x, keep_prob):
 def get_all_conv(x, if_drop):
     PADDING_STRATEGY = 'SAME'
     start_var = set(v.name for v in tf.global_variables())
-    y_ = tf.placeholder(tf.float32, [None, 10])
+    y = tf.placeholder(tf.int32, [None])
+    y_ = tf.one_hot(y, depth = 10)
 
     in_drop = tf.contrib.layers.dropout(x, keep_prob=0.8, is_training = if_drop)
     conv1 = tf.contrib.layers.conv2d(in_drop, num_outputs=96, kernel_size=[3, 3], padding = PADDING_STRATEGY)
