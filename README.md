@@ -2,3 +2,4 @@
 A Senior thesis project on adversarial machine learning.
 
 Report can be found [here](https://drive.google.com/open?id=17NUPCNeo8QQg3P4cEZF0k8soVmP7Sh37).
+This report can only be seen as intermediate and now something terrible happens. The whole project may become meaningless.
