@@ -153,11 +153,12 @@ def get_all_conv(x, if_drop):
     conv9 = tf.contrib.layers.conv2d(conv8, num_outputs=10, kernel_size=[1, 1], padding = PADDING_STRATEGY)
 
     global_ave_pool = tf.reduce_mean(tf.reduce_mean(conv9, axis=2), axis=1)
+    cross_entropy = tf.nn.softmax_cross_entropy_with_logits(labels = y_, logits = global_ave_pool)
 
     end_var = tf.global_variables()
     new_var = [v for v in end_var if v.name not in start_var]
 
-    all_conv = model(global_ave_pool, [x, if_drop], y_)
+    all_conv = model(global_ave_pool, cross_entropy [x, if_drop], y_)
 
     return all_conv, new_var
 
