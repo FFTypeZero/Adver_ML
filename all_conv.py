@@ -27,7 +27,7 @@ PADDING_STRATEGY = 'SAME'
 BATCH_SIZE = 100
 TOTAL_SIZE = 50000
 NUM_STEPS_PER_EPOCH = int(TOTAL_SIZE/BATCH_SIZE)
-NUM_EPOCH = 350
+NUM_EPOCH = 200
 SCHEDULE = np.array([200, 250, 300])
 GAMMA = 0.00008
 LAMBDA = 0.001
@@ -74,12 +74,12 @@ regularizer = tf.add_n([ tf.nn.l2_loss(v) for v in tvars ]) * LAMBDA
 loss = cross_entropy + regularizer
 
 #Optimizer
-# values = [GAMMA*(0.1**i) for i in range(len(SCHEDULE)+1)]
-# boundaries = list(NUM_STEPS_PER_EPOCH * SCHEDULE)
-# global_step = tf.Variable(0, trainable = False, dtype = tf.int64)
-# lr = tf.train.piecewise_constant(global_step, boundaries, values)
-# train_op = tf.train.MomentumOptimizer(learning_rate = lr, momentum = MOMENTUM).minimize(loss, global_step = global_step)
-train_op = tf.train.AdamOptimizer(learning_rate = GAMMA).minimize(loss)
+values = [GAMMA*(0.1**i) for i in range(len(SCHEDULE)+1)]
+boundaries = list(NUM_STEPS_PER_EPOCH * SCHEDULE)
+global_step = tf.Variable(0, trainable = False, dtype = tf.int64)
+lr = tf.train.piecewise_constant(global_step, boundaries, values)
+train_op = tf.train.MomentumOptimizer(learning_rate = lr, momentum = MOMENTUM).minimize(loss, global_step = global_step)
+# train_op = tf.train.AdamOptimizer(learning_rate = GAMMA).minimize(loss)
 
 correct_prediction = tf.equal(tf.argmax(y_, 1), tf.argmax(global_ave_pool, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
@@ -90,16 +90,16 @@ saver = tf.train.Saver()
 ini_op = tf.global_variables_initializer()
 with tf.Session() as sess:
     sess.run(ini_op)
-    saver.restore(sess, "saved_models/all_conv/")
+    # saver.restore(sess, "saved_models/all_conv/")
     test_accuracy = []
-    # for i in range(NUM_EPOCH * NUM_STEPS_PER_EPOCH):
-    #     batchxs, batchys = cifar10_train.next_batch(BATCH_SIZE)
-    #     sess.run(train_op, feed_dict = {x: batchxs, y: batchys, if_drop: True})
-    #     if i % 500 == 0:
-    #         train_accuracy = accuracy.eval(feed_dict = {x: batchxs, y: batchys, if_drop: False})
-    #         print('step %d, training accuracy %g' % (i, train_accuracy))
-    #         saver.save(sess, "saved_models/all_conv/")
-    #     saver.save(sess, "saved_models/all_conv/")
+    for i in range(NUM_EPOCH * NUM_STEPS_PER_EPOCH):
+        batchxs, batchys = cifar10_train.next_batch(BATCH_SIZE)
+        sess.run(train_op, feed_dict = {x: batchxs, y: batchys, if_drop: True})
+        if i % 500 == 0:
+            train_accuracy = accuracy.eval(feed_dict = {x: batchxs, y: batchys, if_drop: False})
+            print('step %d, training accuracy %g' % (i, train_accuracy))
+            saver.save(sess, "saved_models/all_conv/")
+        saver.save(sess, "saved_models/all_conv/")
     for j in range(20):
         testxs, testys = cifar10_test.next_batch(500)
         test_accuracy.append(accuracy.eval(feed_dict = {x: testxs, y: testys, if_drop: False}))
