@@ -15,7 +15,7 @@ import os
 BATCH_SIZE = 50
 LEARNING_RATE = 1e-5
 N_CRITIC = 5
-MAX_ITERATION = 30000
+MAX_ITERATION = 80000
 LAMBDA = 10
 ALPHA = 5
 BETA = 1.0
@@ -121,7 +121,7 @@ for i in range(MAX_ITERATION):
 
 test_images = test[0][0:100]
 test_labels = test[1][0:100]
-test_acc = sess.run(acc_op, feed_dict = {x: test_images, y_: test_labels, if_drop: False})
+test_acc = sess.run(acc_op, feed_dict = {x: test_images, y: test_labels, if_drop: False})
 test_pred = sess.run(pred_op, feed_dict = {x: test_images, if_drop: False})
 adv_imgs = sess.run(x_til, feed_dict = {x: test_images})
 plot_digits(adv_imgs, 10, 10)
