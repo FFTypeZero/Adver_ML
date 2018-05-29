@@ -97,8 +97,8 @@ with tf.Session() as sess:
         if i % 500 == 0:
             train_accuracy = accuracy.eval(feed_dict = {x: batchxs, y: batchys, if_drop: False})
             print('step %d, training accuracy %g' % (i, train_accuracy))
-            saver.save(sess, "saved_models/all_conv")
-        saver.save(sess, "saved_models/all_conv")
+            saver.save(sess, "saved_models/all_conv/")
+        saver.save(sess, "saved_models/all_conv/")
     for j in range(20):
         testxs, testys = cifar10_test.next_batch(500)
         test_accuracy.append(accuracy.eval(feed_dict = {x: testxs, y: testys, if_drop: False}))
