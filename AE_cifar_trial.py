@@ -90,7 +90,8 @@ sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver(var_list = target_var)
 saver.restore(sess, "saved_models/all_conv/")
 
-y_ = tf.placeholder(tf.float32, [None, 10])
+y = tf.placeholder(tf.int32, [None])
+y_ = tf.one_hot(y, depth = 10)
 pred_op = simple_conv.get_pred()
 acc_op = tf.reduce_mean(tf.cast(tf.equal(pred_op, tf.argmax(y_, axis=1)), tf.float32))
 
@@ -113,7 +114,7 @@ for i in range(MAX_ITERATION):
 
     if i % 100 == 0:
         ae_imgs = sess.run(x_til, feed_dict = {x: batchxs})
-        acc = sess.run([acc_op], feed_dict = {z: ae_imgs, y_: batchys, if_drop: False})
+        acc = sess.run([acc_op], feed_dict = {z: ae_imgs, y: batchys, if_drop: False})
         print("Step {}, target accuracy {}.".format(i+1, acc))
         # saver2.save(sess, "saved_models/AE_adv/")
 # saver2.save(sess, "saved_models/AE_adv/")
