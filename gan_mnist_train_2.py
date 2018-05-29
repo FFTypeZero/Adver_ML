@@ -53,7 +53,8 @@ x = tf.placeholder(tf.float32, [None, 784])
 z = tf.reshape(x, [-1, 28, 28, 1])
 epsilon = tf.placeholder(tf.float32)
 
-delta_x, G_var = G_mnist(z, num_of_resi = 2)
+delta_x, G_var = G_mnist(z, 1, num_of_resi = 2)
+delta_x = tf.reshape(delta_x, [-1, 28*28])
 #x_til = 0.5*(tf.sin(delta_x) + 1)
 x_til = tf.nn.relu(delta_x)
 #x_til = x + delta_x

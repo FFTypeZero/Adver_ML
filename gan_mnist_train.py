@@ -53,8 +53,9 @@ x = tf.placeholder(tf.float32, [None, 784])
 z = tf.reshape(x, [-1, 28, 28, 1])
 epsilon = tf.placeholder(tf.float32)
 
-delta_x, G_var = G_mnist(z)
+delta_x, G_var = G_mnist(z, 1)
 # x_til = 0.5*(tf.tanh(delta_x/10) + 1)
+delta_x = tf.reshape(delta_x, [-1, 28*28])
 x_til = tf.nn.relu(delta_x/10)
 x_til_imgs = tf.reshape(x_til, [-1, 28, 28, 1])
 x_hat = epsilon * x + (1-epsilon) * x_til
@@ -107,7 +108,7 @@ for i in range(MAX_ITERATION):
     for t in range(N_CRITIC):
         batch = mnist.train.next_batch(BATCH_SIZE)
         ep_feed = np.random.uniform()
-    
+
         sess.run(update_D, feed_dict = {x: batch[0], epsilon: ep_feed})
     batch = mnist.train.next_batch(BATCH_SIZE)
     _, summary = sess.run([update_G, summary_op], feed_dict = {x: batch[0], keep_prob: 1.0})
