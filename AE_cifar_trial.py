@@ -9,6 +9,7 @@ from get_model import get_max_conv
 from get_model import get_BN_conv
 from discriminator_mnist import D_mnist
 from generator_mnist import G_mnist
+from get_model import get_all_conv
 import os
 
 BATCH_SIZE = 50
@@ -20,12 +21,29 @@ ALPHA = 5
 BETA = 1.0
 GAMMA = 0.1
 
+class Batch_Creator(object):
+    def __init__(self, data):
+        self.current_position = 0
+        self.data = data[0]
+        self.labels = data[1]
+        self.size = len(data[0])
+
+    def next_batch(self, batch_size):
+        start = self.current_position
+        end = self.current_position + batch_size
+        if end >= self.size:
+            self.current_position = 0
+            return self.data[0: batch_size], np.reshape(self.labels[0: batch_size], batch_size)
+        else:
+            self.current_position = end
+            return self.data[start: end], np.reshape(self.labels[start: end], batch_size)
+
 def plot_digits(vecs, nrows, ncols):
-    data = np.reshape(vecs, [nrows, ncols, -1])
+    data = np.reshape(vecs, [nrows, ncols, 32, 32, 3])
     f, axs = plt.subplots(nrows, ncols)
     for i in range(nrows):
         for j in range(ncols):
-            axs[i][j].imshow(np.reshape(data[i][j], [28, 28], order = 'C'), cmap = 'gray')
+            axs[i][j].imshow(data[i][j])
             axs[i][j].axis('off')
     plt.show()
 
@@ -44,20 +62,21 @@ def loss_simple_adv(model, target, targeted = True):
 	lo = model.get_logits()
 	return -tf.reduce_max(target_labels*lo, axis=1)
 
-mnist = input_data.read_data_sets("MNIST_data/", one_hot = True)
+train, test = tf.contrib.keras.datasets.cifar10.load_data()
+cifar10_train = Batch_Creator(train)
+cifar10_test = Batch_Creator(test)
 
-x = tf.placeholder(tf.float32, [None, 784])
-z = tf.reshape(x, [-1, 28, 28, 1])
+x = tf.placeholder(tf.float32, [None, 32, 32, 3])
 epsilon = tf.placeholder(tf.float32)
 
-delta_x, G_var = G_mnist(z)
+delta_x, G_var = G_mnist(x)
 x_til = 0.5*(tf.tanh(delta_x/10) + 1)
-x_til_imgs = tf.reshape(x_til, [-1, 28, 28, 1])
+# x_til_imgs = tf.reshape(x_til, [-1, 28, 28, 1])
 
-keep_prob = tf.placeholder(tf.float32)
-simple_conv, target_var = get_easy_conv(x_til, keep_prob)
+if_drop = tf.placeholder(tf.bool)
+simple_conv, target_var = get_all_conv(x_til, if_drop)
 
-L_hinge = tf.maximum(0.0, tf.norm(x_til - x, axis=1))
+L_hinge = tf.maximum(0.0, tf.norm(x_til - x, axis = [1, 2, 3]))
 diff_loss = tf.reduce_sum(L_hinge)/BATCH_SIZE
 L_G = tf.reduce_sum(L_hinge)/BATCH_SIZE
 
@@ -66,7 +85,7 @@ update_G = tf.train.AdamOptimizer(LEARNING_RATE).minimize(L_G, var_list = G_var)
 sess = tf.Session()
 sess.run(tf.global_variables_initializer())
 saver = tf.train.Saver(var_list = target_var)
-saver.restore(sess, "saved_models/easy_conv/")
+saver.restore(sess, "saved_models/all_conv/")
 
 y_ = tf.placeholder(tf.float32, [None, 10])
 pred_op = simple_conv.get_pred()
@@ -79,26 +98,26 @@ summary_writer = tf.summary.FileWriter("./graphs/gan_mnist_2", sess.graph)
 
 tf.summary.scalar("G loss", L_G)
 tf.summary.scalar("diff_loss", diff_loss)
-tf.summary.image("adv_imgs", x_til_imgs)
+tf.summary.image("adv_imgs", x_til)
 
 summary_op = tf.summary.merge_all()
 saver2 = tf.train.Saver(var_list = G_var)
 
 for i in range(MAX_ITERATION):
-    batch = mnist.train.next_batch(BATCH_SIZE)
-    _, summary = sess.run([update_G, summary_op], feed_dict = {x: batch[0], keep_prob: 1.0})
+    batchxs, batchys = cifar10_train.next_batch(BATCH_SIZE)
+    _, summary = sess.run([update_G, summary_op], feed_dict = {x: batchxs, if_drop: False})
     summary_writer.add_summary(summary, i)
 
     if i % 100 == 0:
-        acc = sess.run([acc_op], feed_dict = {x: batch[0], y_: batch[1], keep_prob: 1.0})
+        acc = sess.run([acc_op], feed_dict = {x: batchxs, y_: batchys, if_drop: False})
         print("Step {}, target accuracy {}.".format(i+1, acc))
         # saver2.save(sess, "saved_models/AE_adv/")
 # saver2.save(sess, "saved_models/AE_adv/")
 
-test_images = mnist.test.images[0:100]
-test_labels = mnist.test.labels[0:100]
-test_acc = sess.run(acc_op, feed_dict = {x: test_images, y_: test_labels, keep_prob: 1.0})
-test_pred = sess.run(pred_op, feed_dict = {x: test_images, keep_prob: 1.0})
+test_images = test[0][0:100]
+test_labels = test[1][0:100]
+test_acc = sess.run(acc_op, feed_dict = {x: test_images, y_: test_labels, if_drop: False})
+test_pred = sess.run(pred_op, feed_dict = {x: test_images, if_drop: False})
 adv_imgs = sess.run(x_til, feed_dict = {x: test_images})
 plot_digits(adv_imgs, 10, 10)
 print(test_acc)

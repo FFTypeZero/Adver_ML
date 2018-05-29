@@ -126,6 +126,41 @@ def get_BN_conv(x, keep_prob):
 
     return BN_conv, new_var
 
+def get_all_conv(x, if_drop):
+    PADDING_STRATEGY = 'SAME'
+    start_var = set(v.name for v in tf.global_variables())
+    y_ = tf.placeholder(tf.float32, [None, 10])
+
+    in_drop = tf.contrib.layers.dropout(x, keep_prob=0.8, is_training = if_drop)
+    conv1 = tf.contrib.layers.conv2d(in_drop, num_outputs=96, kernel_size=[3, 3], padding = PADDING_STRATEGY)
+    conv2 = tf.contrib.layers.conv2d(conv1, num_outputs=96, kernel_size=[3, 3], padding = PADDING_STRATEGY)
+    # conv2_pad = tf.pad(conv2, PADDING_TENSOR)
+    conv3 = tf.contrib.layers.conv2d(conv2, num_outputs=96, kernel_size = [3, 3], stride = [2, 2], padding = PADDING_STRATEGY)
+    # conv3_pad = tf.pad(conv3, PADDING_TENSOR)
+    drop1 = tf.contrib.layers.dropout(conv3, keep_prob=0.5, is_training = if_drop)
+
+    conv4 = tf.contrib.layers.conv2d(drop1, num_outputs=192, kernel_size=[3, 3], padding = PADDING_STRATEGY)
+    # conv4_pad = tf.pad(conv4, PADDING_TENSOR)
+    conv5 = tf.contrib.layers.conv2d(conv4, num_outputs=192, kernel_size=[3, 3], padding = PADDING_STRATEGY)
+    # conv5_pad = tf.pad(conv5, PADDING_TENSOR)
+    conv6 = tf.contrib.layers.conv2d(conv5, num_outputs=192, kernel_size=[3, 3], stride = [2, 2], padding = PADDING_STRATEGY)
+    # conv6_pad = tf.pad(conv6, PADDING_TENSOR)
+    drop2 = tf.contrib.layers.dropout(conv6, keep_prob=0.5, is_training = if_drop)
+
+    conv7 = tf.contrib.layers.conv2d(drop2, num_outputs=192, kernel_size=[3, 3], padding = PADDING_STRATEGY)
+    # conv7_pad = tf.pad(conv7, PADDING_TENSOR)
+    conv8 = tf.contrib.layers.conv2d(conv7, num_outputs=192, kernel_size=[1, 1], padding = PADDING_STRATEGY)
+    conv9 = tf.contrib.layers.conv2d(conv8, num_outputs=10, kernel_size=[1, 1], padding = PADDING_STRATEGY)
+
+    global_ave_pool = tf.reduce_mean(tf.reduce_mean(conv9, axis=2), axis=1)
+
+    end_var = tf.global_variables()
+    new_var = [v for v in end_var if v.name not in start_var]
+
+    all_conv = model(global_ave_pool, [x, if_drop], y_)
+
+    return all_conv, new_var
+
 def get_naive_nn():
     x = tf.placeholder(tf.float32, [None, 784])
     W = tf.get_variable(initializer = tf.zeros([784, 10]), name = 'softmax_W')

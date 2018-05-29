@@ -44,7 +44,7 @@ def G_mnist(z, num_of_resi = 4, batch_norm = False, reuse = False):
     end_var = tf.global_variables()
     new_var = [x for x in end_var if x.name not in start_var]
 
-    output = tf.reshape(output, [-1, 28*28])
+    # output = tf.reshape(output, [-1, 28*28])
 
     return output, new_var
 
