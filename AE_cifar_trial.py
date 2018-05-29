@@ -67,6 +67,9 @@ cifar10_train = Batch_Creator(train)
 cifar10_test = Batch_Creator(test)
 
 x = tf.placeholder(tf.float32, [None, 32, 32, 3])
+z = tf.placeholder(tf.float32, [None, 32, 32, 3])
+simple_conv, target_var = get_all_conv(z, if_drop)
+
 epsilon = tf.placeholder(tf.float32)
 
 delta_x, G_var = G_mnist(x)
@@ -74,7 +77,7 @@ x_til = 0.5*(tf.tanh(delta_x/10) + 1)
 # x_til_imgs = tf.reshape(x_til, [-1, 28, 28, 1])
 
 if_drop = tf.placeholder(tf.bool)
-simple_conv, target_var = get_all_conv(x_til, if_drop)
+
 
 diff_x = tf.reshape(x_til - x, [-1, 32*32*3])
 L_hinge = tf.maximum(0.0, tf.norm(diff_x, axis = 1))
@@ -106,11 +109,12 @@ saver2 = tf.train.Saver(var_list = G_var)
 
 for i in range(MAX_ITERATION):
     batchxs, batchys = cifar10_train.next_batch(BATCH_SIZE)
-    _, summary = sess.run([update_G, summary_op], feed_dict = {x: batchxs, if_drop: False})
+    _, summary = sess.run([update_G, summary_op], feed_dict = {x: batchxs})
     summary_writer.add_summary(summary, i)
 
     if i % 100 == 0:
-        acc = sess.run([acc_op], feed_dict = {x: batchxs, y_: batchys, if_drop: False})
+        ae_imgs = sess.run(x_til, feed_dict = {x: batchxs})
+        acc = sess.run([acc_op], feed_dict = {z: ae_imgs, y_: batchys, if_drop: False})
         print("Step {}, target accuracy {}.".format(i+1, acc))
         # saver2.save(sess, "saved_models/AE_adv/")
 # saver2.save(sess, "saved_models/AE_adv/")
