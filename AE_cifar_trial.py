@@ -73,7 +73,7 @@ simple_conv, target_var = get_all_conv(z, if_drop)
 
 epsilon = tf.placeholder(tf.float32)
 
-delta_x, G_var = G_mnist(x)
+delta_x, G_var = G_mnist(x, 3)
 x_til = 0.5*(tf.tanh(delta_x/10) + 1)
 # x_til_imgs = tf.reshape(x_til, [-1, 28, 28, 1])
 

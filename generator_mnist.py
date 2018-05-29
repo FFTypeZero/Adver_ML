@@ -29,7 +29,7 @@ def DeConvNormRelu(x, name, k, kernel, stride, batch_norm, reuse):
         output = tf.nn.relu(output)
     return output
 
-def G_mnist(z, num_of_resi = 4, batch_norm = False, reuse = False):
+def G_mnist(z, color_channel, num_of_resi = 4, batch_norm = False, reuse = False):
     start_var = set(x.name for x in tf.global_variables())
 
     output = ConvNormRelu(z, "c3s1-8", 8, [3, 3], [1, 1], batch_norm, reuse)
@@ -39,7 +39,7 @@ def G_mnist(z, num_of_resi = 4, batch_norm = False, reuse = False):
         output = ResiBlock(output, "r32_{}".format(i+1), 32, [3, 3], [1, 1], reuse)
     output = DeConvNormRelu(output, "u16", 16, [3, 3], [2, 2], batch_norm, reuse)
     output = DeConvNormRelu(output, "u8", 8, [3, 3], [2, 2], batch_norm, reuse)
-    output = ConvNormRelu(output, "c3s1-1", 1, [3, 3], [1, 1], batch_norm, reuse)
+    output = ConvNormRelu(output, "c3s1-1", color_channel, [3, 3], [1, 1], batch_norm, reuse)
 
     end_var = tf.global_variables()
     new_var = [x for x in end_var if x.name not in start_var]
