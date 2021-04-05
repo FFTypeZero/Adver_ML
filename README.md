@@ -1,4 +1,4 @@
 # Adver_ML
 A Senior thesis project on adversarial machine learning with GAN.
 
-Report can be found [here](https://drive.google.com/open?id=17NUPCNeo8QQg3P4cEZF0k8soVmP7Sh37).
+Report can be found [here](https://homes.cs.washington.edu/~zhihanx/data/adv_gan.pdf).
